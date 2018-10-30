@@ -8,4 +8,4 @@ jobs:
       - run: echo "hello world" # run the `echo` command
       - run:
           name: rundeck job 
-          command: "curl -k -D - -X 'POST' -H 'Accept: application/json' -H 'Content-Type: application/json' -H 'X-Rundeck-Auth-Token: hV9YrFJsvNSDJDOkc9JQ8qBfqsxtXzUr' -d '{"argString":"-build ci-13_7.2.2 -output_dir /Magellan/Export/BuyerRemittanceAdvice48 -start_time 1651 -app_environment dev -stack_name scisupplier_bra_48 "}' 'https://52.40.115.7/api/16/job/8407b6d8-1f78-4fcb-ac5f-3871a93df343/executions'
+          command: "curl -k -D - -X 'POST' -H 'Accept: application/json' -H 'Content-Type: application/json' -H 'X-Rundeck-Auth-Token: hV9YrFJsvNSDJDOkc9JQ8qBfqsxtXzUr' -d '{argString:-build ci-13_7.2.2 -output_dir /Magellan/Export/BuyerRemittanceAdvice48 -start_time 1651 -app_environment dev -stack_name scisupplier_bra_48 }' 'https://52.40.115.7/api/16/job/8407b6d8-1f78-4fcb-ac5f-3871a93df343/executions"
