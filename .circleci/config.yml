@@ -8,4 +8,4 @@ jobs:
       - run: echo "hello world" # run the `echo` command
       - run:
           name: rundeck job 
-          command: curl -D - -X "POST" -H "Accept: application/json" -H "Content-Type: application/json" -H "X-Rundeck-Auth-Token: ${rd_token}" -d "{\"argString\":\"-build ${build} -output_dir ${output_dir} -start_time ${start_time} -app_environment ${app_environment} -stack_name ${stack_name} \"}" "https://rundeck.awsswarm.primerev.com/api/16/job/8407b6d8-1f78-4fcb-ac5f-3871a93df343/executions"
+          command: curl -D - -X POST -H Accept: application/json -H Content-Type: application/json -H X-Rundeck-Auth-Token: ${rd_token} -d {\"argString\":\"-build ${build} -output_dir ${output_dir} -start_time ${start_time} -app_environment ${app_environment} -stack_name ${stack_name} \"} https://rundeck.awsswarm.primerev.com/api/16/job/8407b6d8-1f78-4fcb-ac5f-3871a93df343/executions
