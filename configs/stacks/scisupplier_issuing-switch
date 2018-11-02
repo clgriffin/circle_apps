@@ -1,0 +1,37 @@
+---
+docker_services:
+  - stack_name: scisupplier_issuing-switch
+    compose_version: 3.3
+    services:
+      - name: issuing-switch
+        image: "primerevenue-docker.jfrog.io/issuing-switch:{{ build }}"
+        networks:
+          - "{{ item.env.docker.networks.monitor }}"
+          - "{{ item.env.docker.networks.scisupplier }}"
+        secrets:
+          - "{{ item.env.docker.secrets.db_password }}"
+        container_labels:
+          - "{{ item.env.docker.container_labels }}"
+        service_configuration:
+          deploy:
+            resources:
+              reservations:
+                memory: 512M
+              limits:
+                memory: 768M
+        ports:
+          - target: 6565
+            protocol: tcp
+            mode: host
+        volumes:
+          - type: volume
+            source: "{{ item.env.docker.volumes.issuing_switch_logs }}"
+            target: /usr/src/IssuingSwitch/logs
+        environment:
+          - SCF_VERSION: "{{ build }}"
+          - DATABASE_HOST: "{{item.env.db.host}}"
+          - DATABASE_USER: magellan
+          - DATABASE_PASSWORD: "DOCKER-SECRET:{{item.env.docker.secrets.db_password}}"
+          - LOG_FILE_NAME: IssuingSwitch
+          - SHARED_SECRET: scisuppliersecret
+          - JAVA_OPTS: "-XX:+PrintFlagsFinal -XX:+PrintGCDetails -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9999 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -javaagent:/javaagent/jmx_prometheus_javaagent.jar=8080:/etc/prometheus/config.yaml -Duser.dir=/usr/src/EftSwitch -Dfile.encoding=UTF-8 -Dlog4j.configurationFile=/usr/src/EftSwitch/log4j2.yaml -XX:+UseG1GC -XX:+ExplicitGCInvokesConcurrent -Xms256m -Xmx256m -XX:+UnlockDiagnosticVMOptions -XX:NativeMemoryTracking=summary -XX:+PrintNMTStatistics"
