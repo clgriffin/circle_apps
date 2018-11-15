@@ -1,0 +1,70 @@
+---
+
+scisupplier:
+  - env: 
+      name: dev
+      location: atl
+      domain: primerev.com
+      db:
+        host: 172.18.2.115
+        port: 1433
+      ignite:
+        servers:
+          - devignite01.atl.primerev.com
+        cache_name: primary_cache
+        igfs_name: primary_igfs
+      smtp:
+        host: 172.18.3.80
+        port: 600
+      docker:
+        host: qaswarm-m1-prod.atl.primerev.com
+        domain: qaswarm.primerev.com
+        container_labels:
+          graylog: nonprod
+        service_configuration:
+          deploy:
+            mode: replicated
+            placement:
+              constraints: "[node.labels.environment == dev]"
+            resources:
+              reservations:
+                memory: 64M
+              limits:
+                memory: 64M
+            replicas: 1
+            update_config:
+              parallelism: 1
+              delay: 10s
+            restart_policy:
+              condition: on-failure
+              delay: 5s
+              max_attempts: 2
+              window: 120s
+        networks: 
+          monitor: monitor_net
+          scisupplier: dev_scisupplier
+        secrets:
+          db_password: dev_scisupplier_db_magellan_password
+        volumes:
+          magellan_exports: 
+            name: dev_magellan_exports
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //172.18.2.110/C$$/Magellan/Export
+              o: username=Administrator,password=it w2k,file_mode=0777,dir_mode=0777
+          eft_switch_logs:
+            name: dev_eft-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //172.18.2.110/C$$/Magellan/Stack/EftSwitch/Logs
+              o: username=Administrator,password=it w2k,file_mode=0777,dir_mode=0777
+          issuing_switch_logs:
+            name: dev_issuing-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //172.18.2.110/C$$/Magellan/Stack/IssuingSwitch/Logs
+              o: username=Administrator,password=it w2k,file_mode=0777,dir_mode=0777
+

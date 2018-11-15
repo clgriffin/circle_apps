@@ -1,0 +1,741 @@
+---
+
+scisupplier:
+  - env: 
+      name: dev
+      location: atl
+      domain: primerev.com
+      db:
+        host: 172.18.2.115
+        port: 1433
+      ignite:
+        servers:
+          - devignite01.atl.primerev.com
+        cache_name: primary_cache
+        igfs_name: primary_igfs
+      smtp:
+        host: 172.18.3.80
+        port: 600
+      docker:
+        host: qaswarm-m1-prod.atl.primerev.com
+        domain: qaswarm.primerev.com
+        container_labels:
+          graylog: nonprod
+        service_configuration:
+          deploy:
+            mode: replicated
+            placement:
+              constraints: [node.labels.environment == dev]
+            resources:
+              reservations:
+                memory: 64M
+              limits:
+                memory: 64M
+            replicas: 1
+            update_config:
+              parallelism: 1
+              delay: 10s
+            restart_policy:
+              condition: on-failure
+              delay: 5s
+              max_attempts: 2
+              window: 120s
+        networks: 
+          monitor: monitor_net
+          scisupplier: dev_scisupplier
+        secrets:
+          db_password: dev_scisupplier_db_magellan_password
+        volumes:
+          magellan_exports: 
+            name: dev_magellan_exports
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //172.18.2.110/C$$/Magellan/Export
+              o: username=Administrator,password=it w2k,file_mode=0777,dir_mode=0777
+          eft_switch_logs:
+            name: dev_eft-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //172.18.2.110/C$$/Magellan/Stack/EftSwitch/Logs
+              o: username=Administrator,password=it w2k,file_mode=0777,dir_mode=0777
+          issuing_switch_logs:
+            name: dev_issuing-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //172.18.2.110/C$$/Magellan/Stack/IssuingSwitch/Logs
+              o: username=Administrator,password=it w2k,file_mode=0777,dir_mode=0777
+
+  - env:
+      name: demo
+      location: atl
+      domain: primerev.com
+      db:
+        host: 172.18.1.61
+        port: 1433
+      ignite:
+        servers:
+          - demoignite01.atl.primerev.com
+        cache_name: primary_cache
+        igfs_name: primary_igfs
+      smtp:
+        host: 172.18.3.80
+        port: 600
+      docker:
+        host: atlswarm-m1-prod.atl.primerev.com
+        domain: atlswarm.primerev.com
+        container_labels:
+          graylog: nonprod
+        service_configuration:
+          deploy:
+            placement:
+              constraints: [node.labels.environment == nonprod]
+            resources:
+              reservations:
+                memory: 64M
+              limits:
+                memory: 64M
+            replicas: 1
+            update_config:
+              parallelism: 1
+              delay: 10s
+            restart_policy:
+              condition: on-failure
+              delay: 5s
+              max_attempts: 2
+              window: 120s
+        networks:
+          monitor: monitor_net
+          scisupplier: demo_scisupplier
+          vlan: demo_vlan_11
+        secrets:
+          db_password: demo_scisupplier_db_magellan_password
+        volumes:
+          magellan_exports:
+            name: demo_magellan_exports
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //172.18.1.110/C$$/Magellan/Export
+              o: username=docker_logs,password=d0cker_l0gs2018,file_mode=0777,dir_mode=0777
+          eft_switch_logs:
+            name: demo_eft-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //172.18.1.110/C$$/Magellan/Stack/EftSwitch/Logs
+              o: username=docker_logs,password=d0cker_l0gs2018,file_mode=0777,dir_mode=0777
+          issuing_switch_logs:
+            name: demo_issuing-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //172.18.1.110/C$$/Magellan/Stack/IssuingSwitch/Logs
+              o: username=Administrator,password=it w2k,file_mode=0777,dir_mode=0777
+
+  - env:
+      name: dr
+      location: jax
+      domain: primerev.com
+      db:
+        host: 192.168.179.104
+        port: 1433
+      ignite:
+        servers:
+          - drignite01.jax.primerev.com
+        cache_name: primary_cache
+        igfs_name: primary_igfs
+      smtp:
+        host: 172.18.3.80
+        port: 600
+      docker:
+        host: jaxswarm-m1-prod.atl.primerev.com
+        domain: jaxswarm.primerev.com
+        container_labels:
+          graylog: prod
+        service_configuration:
+          deploy:
+            placement:
+              constraints: [node.labels.environment == prod]
+            resources:
+              reservations:
+                memory: 64M
+              limits:
+                memory: 64M
+            replicas: 1
+            update_config:
+              parallelism: 1
+              delay: 10s
+            restart_policy:
+              condition: on-failure
+              delay: 5s
+              max_attempts: 2
+              window: 120s
+        networks:
+          monitor: monitor_net
+          scisupplier: dr_scisupplier
+          vlan: production_vlan_52
+        secrets:
+          db_password: prod_scisupplier_db_magellan_password
+        volumes:
+          magellan_exports:
+            name: dr_magellan_exports
+            driver: local
+            driver_opts:   
+              type: cifs
+              device: //192.168.179.31/C$$/Magellan/Export
+              o: username=docker_logs,password=d0ck3r_l0gs,file_mode=0777,dir_mode=0777
+          eft_switch_logs:
+            name: dr_eft-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //192.168.179.31/C$$/Magellan/Stack/EftSwitch/Logs
+              o: username=docker_logs,password=d0ck3r_l0gs,file_mode=0777,dir_mode=0777
+          issuing_switch_logs:
+            name: dr_issuing-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //192.168.179.31/C$$/Magellan/Stack/IssuingSwitch/Logs
+              o: username=docker_logs,password=d0ck3r_l0gs,file_mode=0777,dir_mode=0777
+
+  - env:
+      name: production
+      location: atl
+      domain: primerev.com
+      db:
+        host: 192.168.176.104
+        port: 1433
+      ignite:
+        servers:
+          - prdignite01.atl.primerev.com
+          - prdignite02.atl.primerev.com
+          - prdignite03.atl.primerev.com
+        cache_name: primary_cache
+        igfs_name: primary_igfs
+      smtp:
+        host: 172.18.3.80
+        port: 600
+      docker:
+        host: atlswarm-m1-prod.atl.primerev.com
+        domain: atlswarm.primerev.com
+        container_labels:
+          graylog: prod
+        service_configuration:
+          deploy:
+            mode: replicated
+            placement:
+              constraints: [node.labels.environment == prod]
+            resources:
+              reservations:
+                memory: 64M
+              limits:
+                memory: 64M
+            replicas: 1
+            update_config:
+              parallelism: 1
+              delay: 10s
+            restart_policy:
+              condition: on-failure
+              delay: 5s
+              max_attempts: 2
+              window: 120s
+        networks:
+          monitor: monitor_net
+          scisupplier: production_scisupplier
+          vlan: production_vlan_52
+        secrets:
+          db_password: prod_scisupplier_db_magellan_password
+        volumes:
+          magellan_exports:
+            name: prod_magellan_exports
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //10.60.1.10/C$$/Magellan/Export
+              o: username=docker_logs,password=d0ck3r_l0gs,domain=PRIMEREV,file_mode=0777,dir_mode=0777
+          eft_switch_logs:
+            name: production_eft-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //10.60.1.10/Magellan/Stack/EftSwitch/Logs
+              o: username=docker_logs,password=d0ck3r_l0gs,domain=PRIMEREV,file_mode=0777,dir_mode=0777
+          issuing_switch_logs:
+            name: production_issuing-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //10.60.1.10/C$$/Magellan/Stack/IssuingSwitch/Logs
+              o: username=docker_logs,password=d0ck3r_l0gs,domain=PRIMEREV,file_mode=0777,dir_mode=0777
+
+  - env:
+      name: qaloadtest
+      location: atl
+      domain: primerev.com
+      db:
+        host: 172.18.2.163
+        port: 1433
+      ignite:
+        servers:
+          - qaloadtestignite01.atl.primerev.com
+        cache_name: primary_cache
+        igfs_name: primary_igfs
+      smtp:
+        host: mailhog.qaswarm.primerev.com
+        port: 21025
+      docker:
+        host: qaswarm-m1.atl.primerev.com
+        domain: qaswarm.primerev.com
+        container_labels:
+          graylog: nonprod
+        service_configuration:
+          deploy:
+            placement:
+              constraints: [node.labels.environment == nonprod]
+            resources:
+              reservations:
+                memory: 64M
+              limits:
+                memory: 64M
+            replicas: 1
+            update_config:
+              parallelism: 1
+              delay: 10s
+            restart_policy:
+              condition: on-failure
+              delay: 5s
+              max_attempts: 2
+              window: 120s
+        networks:
+          monitor: monitor_net
+          scisupplier: qaloadtest_scisupplier
+        secrets:
+          db_password: qaloadtest_scisupplier_db_magellan_password
+        volumes:
+          magellan_exports:
+            name: qaloadtest_magellan_exports
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //172.18.2.131/C$$/Magellan/Export
+              o: username=docker_logs,password=Prime109,domain=qaloadtestmain1,file_mode=0777,dir_mode=0777
+          eft_switch_logs:
+            name: qaloadtest_eft-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //172.18.2.131/C$$/Magellan/Stack/EftSwitch/Logs
+              o: username=docker_logs,password=Prime109,domain=qaloadtestmain1,file_mode=0777,dir_mode=0777
+          issuing_switch_logs:
+            name: qaloadtest_issuing-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //172.18.2.131/C$$/Magellan/Stack/IssuingSwitch/Logs
+              o: username=docker_logs,password=Prime109,domain=qaloadtestmain1,file_mode=0777,dir_mode=0777
+
+  - env:
+      name: qamajorreg
+      location: atl
+      domain: primerev.com
+      db:
+        host: 172.18.2.62
+        port: 1433
+      ignite:
+        servers:
+          - qamajorregignite01.atl.primerev.com
+        cache_name: primary_cache
+        igfs_name: primary_igfs
+      smtp:
+        host: 172.18.3.80
+        port: 600
+      docker:
+        host: qaswarm-m1.atl.primerev.com
+        domain: qaswarm.primerev.com
+        container_labels:
+          graylog: nonprod
+        service_configuration:
+          deploy:
+            placement:
+              constraints: [node.labels.environment == nonprod]
+            resources:
+              reservations:
+                memory: 64M
+              limits:
+                memory: 64M
+            replicas: 1
+            update_config:
+              parallelism: 1
+              delay: 10s
+            restart_policy:
+              condition: on-failure
+              delay: 5s
+              max_attempts: 2
+              window: 120s
+        networks:
+          monitor: monitor_net
+          scisupplier: qamajorreg_scisupplier
+        secrets:
+          db_password: qamajorreg_scisupplier_db_magellan_password
+        volumes:
+          magellan_exports:
+            name: qamajorreg_magellan_exports
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //172.18.2.61/C$$/Magellan/Export
+              o: username=Administrator,password=it w2k,file_mode=0777,dir_mode=0777
+          eft_switch_logs:
+            name: qamajorreg_eft-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //172.18.2.61/C$$/Magellan/Stack/EftSwitch/Logs
+              o: username=Administrator,password=it w2k,file_mode=0777,dir_mode=0777
+          issuing_switch_logs:
+            name: qamajorreg_issuing-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //172.18.2.61/C$$/Magellan/Stack/IssuingSwitch/Logs
+              o: username=Administrator,password=it w2k,file_mode=0777,dir_mode=0777
+
+  - env:
+      name: qaminorreg
+      location: atl
+      domain: primerev.com
+      db:
+        host: 172.18.2.80
+        port: 1433
+      ignite:
+        servers:
+          - qaminorregignite01.atl.primerev.com
+        cache_name: primary_cache
+        igfs_name: primary_igfs
+      smtp:
+        host: 172.18.3.80
+        port: 600
+      docker:
+        host: qaswarm-m1.atl.primerev.com
+        domain: qaswarm.primerev.com
+        container_labels:
+          graylog: nonprod
+        service_configuration:
+          deploy:
+            placement:
+              constraints: [node.labels.environment == nonprod]
+            resources:
+              reservations:
+                memory: 64M
+              limits:
+                memory: 64M
+            replicas: 1
+            update_config:
+              parallelism: 1
+              delay: 10s
+            restart_policy:
+              condition: on-failure
+              delay: 5s
+              max_attempts: 2
+              window: 120s
+        networks:
+          monitor: monitor_net
+          scisupplier: qaminorreg_scisupplier
+        secrets:
+          db_password: qaminorreg_scisupplier_db_magellan_password
+        volumes:
+          magellan_exports:
+            name: qaminorreg_magellan_exports
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //172.18.2.81/C$$/Magellan/Export
+              o: username=Administrator,password=it w2k,file_mode=0777,dir_mode=0777
+          eft_switch_logs:
+            name: qaminorreg_eft-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //172.18.2.81/C$$/Magellan/Stack/EftSwitch/Logs
+              o: username=Administrator,password=it w2k,file_mode=0777,dir_mode=0777
+          issuing_switch_logs:
+            name: qaminorreg_issuing-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //172.18.2.81/C$$/Magellan/Stack/IssuingSwitch/Logs
+              o: username=Administrator,password=it w2k,file_mode=0777,dir_mode=0777
+
+  - env:
+      name: qatest
+      location: atl
+      domain: primerev.com
+      db:
+        host: 172.18.2.16
+        port: 1433
+      ignite:
+        servers:
+          - qatestignite01.atl.primerev.com
+        cache_name: primary_cache
+        igfs_name: primary_igfs
+      smtp:
+        host: 172.18.3.80
+        port: 600
+      docker:
+        host: qaswarm-m1.atl.primerev.com
+        domain: qaswarm.primerev.com
+        container_labels:
+          graylog: nonprod
+        service_configuration:
+          deploy:
+            placement:
+              constraints: [node.labels.environment == nonprod]
+            resources:
+              reservations:
+                memory: 64M
+              limits:
+                memory: 64M
+            replicas: 1
+            update_config:
+              parallelism: 1
+              delay: 10s
+            restart_policy:
+              condition: on-failure
+              delay: 5s
+              max_attempts: 2
+              window: 120s
+        networks:
+          monitor: monitor_net
+          scisupplier: qatest_scisupplier
+        secrets:
+          db_password: qatest_scisupplier_db_magellan_password
+        volumes:
+          magellan_exports:
+            name: qatest_magellan_exports
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //172.18.2.10/C$$/Magellan/Export
+              o: username=Administrator,password=it w2k,file_mode=0777,dir_mode=0777
+          eft_switch_logs:
+            name: qatest_eft-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //172.18.2.10/C$$/Magellan/Stack/EftSwitch/Logs
+              o: username=Administrator,password=it w2k,file_mode=0777,dir_mode=0777
+          issuing_switch_logs:
+            name: qatest_issuing-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //172.18.2.10/C$$/Magellan/Stack/IssuingSwitch/Logs
+              o: username=Administrator,password=it w2k,file_mode=0777,dir_mode=0777
+
+  - env:
+      name: qatest6
+      location: atl
+      domain: primerev.com
+      db:
+        host: 172.18.2.54
+        port: 1433
+      ignite:
+        servers:
+          - qatest6ignite01.atl.primerev.com
+        cache_name: primary_cache
+        igfs_name: primary_igfs
+      smtp:
+        host: 172.18.3.80
+        port: 600
+      docker:
+        host: qaswarm-m1.atl.primerev.com
+        domain: qaswarm.primerev.com
+        container_labels:
+          graylog: nonprod
+        service_configuration:
+          deploy:
+            placement:
+              constraints: [node.labels.environment == nonprod]
+            resources:
+              reservations:
+                memory: 64M
+              limits:
+                memory: 64M
+            replicas: 1
+            update_config:
+              parallelism: 1
+              delay: 10s
+            restart_policy:
+              condition: on-failure
+              delay: 5s
+              max_attempts: 2
+              window: 120s
+        networks:
+          monitor: monitor_net
+          scisupplier: qatest6_scisupplier
+        secrets:
+          db_password: qatest6_scisupplier_db_magellan_password
+        volumes:
+          magellan_exports:
+            name: qatest6_magellan_exports
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //172.18.2.55/C$$/Magellan/Export
+              o: username=Administrator,password=it w2k,file_mode=0777,dir_mode=0777
+          eft_switch_logs:
+            name: qatest6_eft-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //172.18.2.55/C$$/Magellan/Stack/EftSwitch/Logs
+              o: username=Administrator,password=it w2k,file_mode=0777,dir_mode=0777
+          issuing_switch_logs:
+            name: qatest6_issuing-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //172.18.2.55/C$$/Magellan/Stack/IssuingSwitch/Logs
+              o: username=Administrator,password=it w2k,file_mode=0777,dir_mode=0777
+ 
+  - env:
+      name: staging
+      location: atl
+      domain: primerev.com
+      db:
+        host: 192.168.175.101
+        port: 1433
+      ignite:
+        servers:
+          - stagingignite01.atl.primerev.com
+          - stagingignite02.atl.primerev.com
+          - stagingignite03.atl.primerev.com
+        cache_name: primary_cache
+        igfs_name: primary_igfs
+      smtp:
+        host: mailhog.atlswarm.primerev.com
+        port: 21025
+      docker:
+        host: atlswarm-m1-prod.atl.primerev.com
+        domain: atlswarm.primerev.com
+        container_labels:
+          graylog: nonprod
+        service_configuration:
+          deploy:
+            placement:
+              constraints: [node.labels.environment == nonprod]
+            resources:
+              reservations:
+                memory: 64M
+              limits:
+                memory: 64M
+            replicas: 1
+            update_config:
+              parallelism: 1
+              delay: 10s
+            restart_policy:
+              condition: on-failure
+              delay: 5s
+              max_attempts: 2
+              window: 120s
+        networks:
+          monitor: monitor_net
+          scisupplier: staging_scisupplier
+          vlan: staging_vlan_51
+        secrets:
+          db_password: staging_scisupplier_db_magellan_password
+        volumes:
+          magellan_exports:
+            name: staging_magellan_exports
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //192.168.175.32/C$$/Magellan/Export
+              o: username=docker_logs,password=Prime109,domain=STAGING,file_mode=0777,dir_mode=0777
+          eft_switch_logs:
+            name: staging_eft-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //192.168.175.32/C$$/Magellan/Stack/EftSwitch/Logs
+              o: username=docker_logs,password=Prime109,domain=STAGING,file_mode=0777,dir_mode=0777
+          issuing_switch_logs:
+            name: staging_issuing-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //192.168.175.32/C$$/Magellan/Stack/IssuingSwitch/Logs
+              o: username=docker_logs,password=Prime109,domain=STAGING,file_mode=0777,dir_mode=0777
+
+  - env:
+      name: uat
+      location: atl
+      domain: primerev.com
+      db:
+        host: 192.168.154.63
+        port: 1433
+      ignite:
+        servers:
+          - uatignite01.atl.primerev.com
+          - uatignite02.atl.primerev.com
+          - uatignite03.atl.primerev.com
+        cache_name: primary_cache
+        igfs_name: primary_igfs
+      smtp:
+        host: 172.18.3.80
+        port: 600
+      docker:
+        host: atlswarm-m1-prod.atl.primerev.com
+        domain: atlswarm.primerev.com
+        container_labels:
+          graylog: nonprod
+        service_configuration:
+          deploy:
+            placement:
+              constraints: [node.labels.environment == nonprod]
+            resources:
+              reservations:
+                memory: 64M
+              limits:
+                memory: 64M
+            replicas: 1
+            update_config:
+              parallelism: 1
+              delay: 10s
+            restart_policy:
+              condition: on-failure
+              delay: 5s
+              max_attempts: 2
+              window: 120s
+        networks:
+          monitor: monitor_net
+          scisupplier: uat_scisupplier
+          vlan: uat_vlan_31
+        secrets:
+          db_password: uat_scisupplier_db_magellan_password
+        volumes:
+          magellan_exports:
+            name: uat_magellan_exports
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //192.168.154.31/C$$/Magellan/Export
+              o: username=docker_logs,password=d0cker_l0gs2018,file_mode=0777,dir_mode=0777
+          eft_switch_logs:
+            name: uat_eft-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //192.168.154.31/C$$/Magellan/Stack/EftSwitch/Logs
+              o: username=docker_logs,password=d0cker_l0gs2018,file_mode=0777,dir_mode=0777
+          issuing_switch_logs:
+            name: uat_issuing-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //192.168.154.31/C$$/Magellan/Stack/IssuingSwitch/Logs
+              o: username=docker_logs,password=d0cker_l0gs2018,file_mode=0777,dir_mode=0777

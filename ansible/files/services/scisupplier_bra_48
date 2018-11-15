@@ -1,0 +1,45 @@
+---
+docker_services:
+  - stack_name: scisupplier_bra_48
+    compose_version: 3.3
+    services:
+      - name: svc
+        image: "primerevenue-docker.jfrog.io/odap-svc-bra-48-export:${TAG:-{{ build }}}"
+        networks:
+          - "{{ item.env.docker.networks.monitor }}"
+          - "{{ item.env.docker.networks.scisupplier }}"
+        secrets:
+          - "{{ item.env.docker.secrets.db_password }}"
+        container_labels:
+          - "{{ item.env.docker.container_labels }}"
+        service_configuration:
+          deploy:
+            mode: replicated
+            resources:
+              reservations:
+                memory: 512M
+              limits:
+                memory: 768M
+            labels:
+              primerevenue.environment: "{{ item.env.name }}"
+        environment:
+          - ODAP_LINE_SEPARATOR: "CRLF"
+          - BRA_48_EXPORT_SERVICE_PROPERTIES_FILE_EXTENSION: "rpt"
+          - BRA_48_EXPORT_SERVICE_PROPERTIES_REMITTANCE_ADVICE_ADDRESS: "${BRA_48_EXPORT_SERVICE_PROPERTIES_REMITTANCE_ADVICE_ADDRESS:-{{ output_dir }}}"
+          - BRA_48_EXPORT_SERVICE_PROPERTIES_REMITTANCE_ADVICE_TIME: "${BRA_48_EXPORT_SERVICE_PROPERTIES_REMITTANCE_ADVICE_TIME:-{{ start_time }}}"
+          - DEFAULT_DATABASE_DATABASE_HOST: "{{item.env.db.host}}"
+          - DEFAULT_DATABASE_DATABASE_PASSWORD: "DOCKER-SECRET:{{item.env.docker.secrets.db_password}}"
+          - MAGELLAN_REPORTING_PROPERTIES_DATABASE_HOST: "{{item.env.db.host}}"
+          - MAGELLAN_REPORTING_PROPERTIES_DATABASE_PASSWORD: "DOCKER-SECRET:{{item.env.docker.secrets.db_password}}"
+          - MAGELLAN_RELATIONS_PROPERTIES_DATABASE_HOST: "{{item.env.db.host}}"
+          - MAGELLAN_RELATIONS_PROPERTIES_DATABASE_PASSWORD: "DOCKER-SECRET:{{item.env.docker.secrets.db_password}}"
+          - SHARED_SECRET: scisuppliersecret
+          - IGNITE_TCP_DISCOVERY_ADDRESSES: "{{ item.env.ignite.servers  | join(',') }}"
+          - IGFS_NAME: "primary_igfs"
+          - IGNITE_CACHE_NAME: "primary_cache"
+          - IGNITE_PEER_CLASS_LOADING: "false"
+          - IGNITE_SKIP_CONFIGURATION_CONSISTENCY_CHECK: "true"
+          - IGNITE_CACHE_MODE: REPLICATED
+          - IGNITE_ATOMICITY_MODE: ATOMIC
+          - IGNITE_CLIENT_MODE_ENABLED: true
+          - JAVA_OPTS: "-XX:+PrintFlagsFinal -XX:+PrintGCDetails -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9999 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -javaagent:/javaagent/jmx_prometheus_javaagent.jar=8080:/etc/prometheus/config.yaml -Duser.dir=/usr/src/OdapBra48Export -Dfile.encoding=UTF-8 -Dlog4j.configurationFile=/usr/src/OdapBra48Export/log4j2.yaml -XX:+UseG1GC -XX:+ExplicitGCInvokesConcurrent -Xms512m -Xmx512m -XX:+UnlockDiagnosticVMOptions -XX:NativeMemoryTracking=summary -XX:+PrintNMTStatistics"

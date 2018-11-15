@@ -1,0 +1,70 @@
+---
+
+scisupplier:
+  - env:
+      name: dr
+      location: jax
+      domain: primerev.com
+      db:
+        host: 192.168.179.104
+        port: 1433
+      ignite:
+        servers:
+          - drignite01.jax.primerev.com
+        cache_name: primary_cache
+        igfs_name: primary_igfs
+      smtp:
+        host: 172.18.3.80
+        port: 600
+      docker:
+        host: jaxswarm-m1-prod.atl.primerev.com
+        domain: jaxswarm.primerev.com
+        container_labels:
+          graylog: prod
+        service_configuration:
+          deploy:
+            placement:
+              constraints: "[node.labels.environment == prod]"
+            resources:
+              reservations:
+                memory: 64M
+              limits:
+                memory: 64M
+            replicas: 1
+            update_config:
+              parallelism: 1
+              delay: 10s
+            restart_policy:
+              condition: on-failure
+              delay: 5s
+              max_attempts: 2
+              window: 120s
+        networks:
+          monitor: monitor_net
+          scisupplier: dr_scisupplier
+          vlan: production_vlan_52
+        secrets:
+          db_password: prod_scisupplier_db_magellan_password
+        volumes:
+          magellan_exports:
+            name: dr_magellan_exports
+            driver: local
+            driver_opts:   
+              type: cifs
+              device: //192.168.179.31/C$$/Magellan/Export
+              o: username=docker_logs,password=d0ck3r_l0gs,file_mode=0777,dir_mode=0777
+          eft_switch_logs:
+            name: dr_eft-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //192.168.179.31/C$$/Magellan/Stack/EftSwitch/Logs
+              o: username=docker_logs,password=d0ck3r_l0gs,file_mode=0777,dir_mode=0777
+          issuing_switch_logs:
+            name: dr_issuing-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //192.168.179.31/C$$/Magellan/Stack/IssuingSwitch/Logs
+              o: username=docker_logs,password=d0ck3r_l0gs,file_mode=0777,dir_mode=0777
+

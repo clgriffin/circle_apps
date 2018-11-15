@@ -1,0 +1,41 @@
+---
+docker_services:
+  - stack_name: scisupplier_locale_task_and_alerts_ignite
+    compose_version: 3.3
+    services:
+      - name: svc
+        image: "primerevenue-docker.jfrog.io/odap-svc-locale-task-and-alerts-ignite:${TAG:-{{ build }}}"
+        networks:
+          - "{{ item.env.docker.networks.monitor }}"
+          - "{{ item.env.docker.networks.scisupplier }}"
+        secrets:
+          - "{{ item.env.docker.secrets.db_password }}"
+        container_labels:
+          - "{{ item.env.docker.container_labels }}"
+        service_configuration:
+          deploy:
+            mode: replicated
+            resources:
+              reservations:
+                memory: 512M
+              limits:
+                memory: 768M
+            labels:
+              primerevenue.environment: "{{ item.env.name }}"
+        environment:
+          - CFG_DATABASE_NAME: "ComsServerCfg"
+          - DATABASE_PORT: "{{item.env.db.port}}"
+          - DATABASE_HOST: "{{item.env.db.host}}"
+          - DATABASE_USER: magellan
+          - DATABASE_PASSWORD: "DOCKER-SECRET:{{item.env.docker.secrets.db_password}}"
+          - IGNITE_CACHE_NAME: "{{ item.env.ignite.cache_name }}"
+          - IGNITE_IP_FINDER: "tcp"
+          - IGNITE_PEER_CLASS_LOADING: "false"
+          - IGNITE_QUEUE_LIMIT: 1024
+          - IGNITE_SKIP_CONFIGURATION_CONSISTENCY_CHECK: "true"
+          - IGNITE_TCP_DISCOVERY_ADDRESSES: "{{ item.env.ignite.servers  | join(',') }}"
+          - IGNITE_CACHE_MODE: "REPLICATED"
+          - IGNITE_ATOMICITY_MODE: "ATOMIC"
+          - IGNITE_CLIENT_MODE_ENABLED: "true"
+          - TASK_AND_ALERTS_LOCALE_SERVICE_PARALLEL_MODE: "${TASK_AND_ALERTS_LOCALE_SERVICE_PARALLEL_MODE:-{{ parallel_mode }}}"
+          - JAVA_OPTS: "-XX:+PrintFlagsFinal -XX:+PrintGCDetails -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9999 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -javaagent:/javaagent/jmx_prometheus_javaagent.jar=8080:/etc/prometheus/config.yaml -XX:+UseG1GC -XX:+ExplicitGCInvokesConcurrent -Xms512m -Xmx512m -XX:+UnlockDiagnosticVMOptions -XX:NativeMemoryTracking=summary -XX:+PrintNMTStatistics"

@@ -1,0 +1,72 @@
+---
+
+scisupplier:
+  - env:
+      name: staging
+      location: atl
+      domain: primerev.com
+      db:
+        host: 192.168.175.101
+        port: 1433
+      ignite:
+        servers:
+          - stagingignite01.atl.primerev.com
+          - stagingignite02.atl.primerev.com
+          - stagingignite03.atl.primerev.com
+        cache_name: primary_cache
+        igfs_name: primary_igfs
+      smtp:
+        host: mailhog.atlswarm.primerev.com
+        port: 21025
+      docker:
+        host: atlswarm-m1-prod.atl.primerev.com
+        domain: atlswarm.primerev.com
+        container_labels:
+          graylog: nonprod
+        service_configuration:
+          deploy:
+            placement:
+              constraints: "[node.labels.environment == nonprod]"
+            resources:
+              reservations:
+                memory: 64M
+              limits:
+                memory: 64M
+            replicas: 1
+            update_config:
+              parallelism: 1
+              delay: 10s
+            restart_policy:
+              condition: on-failure
+              delay: 5s
+              max_attempts: 2
+              window: 120s
+        networks:
+          monitor: monitor_net
+          scisupplier: staging_scisupplier
+          vlan: staging_vlan_51
+        secrets:
+          db_password: staging_scisupplier_db_magellan_password
+        volumes:
+          magellan_exports:
+            name: staging_magellan_exports
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //192.168.175.32/C$$/Magellan/Export
+              o: username=docker_logs,password=Prime109,domain=STAGING,file_mode=0777,dir_mode=0777
+          eft_switch_logs:
+            name: staging_eft-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //192.168.175.32/C$$/Magellan/Stack/EftSwitch/Logs
+              o: username=docker_logs,password=Prime109,domain=STAGING,file_mode=0777,dir_mode=0777
+          issuing_switch_logs:
+            name: staging_issuing-switch_logs
+            driver: local
+            driver_opts:
+              type: cifs
+              device: //192.168.175.32/C$$/Magellan/Stack/IssuingSwitch/Logs
+              o: username=docker_logs,password=Prime109,domain=STAGING,file_mode=0777,dir_mode=0777
+

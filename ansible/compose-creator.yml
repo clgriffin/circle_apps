@@ -1,0 +1,38 @@
+- hosts: localhost
+  connection: local
+  vars:
+    config_dir: "~/git_repos/TechOps/config/stacks"
+    stack_name: "scisupplier_eft-switch"
+    env_file: files/environments/dev
+    service_file: "files/services/{{ stack_name }}"
+    compose_template: odap-docker-compose.j2
+    start_time: 1651
+    output_dir: "/Magellan/Export/BuyerRemittanceAdvice-rerun"
+    build: 1.0.0-SNAPSHOT
+    send_mail_enabled: true
+    scheduled_cron_expression: "0 00 10 * * *"
+    service_time: "0721"
+    parallel_mode: "false"
+  
+  tasks:
+
+  - name: compose-creator | Include Variables
+    include_vars: "{{ item }}"
+    with_items:
+      - "{{ env_file }}"
+      - "{{ service_file }}"
+
+  - name: compose-creator | Ensure directory location to store compose file exists
+    file: >
+      path="{{ config_dir }}/{{ stack_name }}/{{ item.env.name }}"
+      recurse=yes
+      state=directory
+    with_items: 
+      - "{{ scisupplier }}"
+
+  - name: compose-creator | Create compose file from template
+    template:
+      src: "templates/{{ compose_template }}"
+      dest: "{{ config_dir }}/{{ stack_name }}/{{ item.env.name }}/{{ item.env.location}}-docker-compose.yml"
+    with_items: 
+      - "{{ scisupplier }}"

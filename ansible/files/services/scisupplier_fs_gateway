@@ -1,0 +1,36 @@
+---
+docker_services:
+  - stack_name: scisupplier_fs_gateway
+    compose_version: 3.3
+    services:
+      - name: svc
+        image: "primerevenue-docker.jfrog.io/odap-svc-filesystem-gateway:${TAG:-{{ build }}}"
+        networks:
+          - "{{ item.env.docker.networks.monitor }}"
+          - "{{ item.env.docker.networks.scisupplier }}"
+        container_labels:
+          - "{{ item.env.docker.container_labels }}"
+        service_configuration:
+          deploy:
+            mode: replicated
+            resources:
+              reservations:
+                memory: 512M
+              limits:
+                memory: 768M
+            labels:
+              primerevenue.environment: "{{ item.env.name }}"
+        volumes:
+          - type: volume
+            source: "{{ item.env.docker.volumes.magellan_exports }}"
+            target: /Magellan/Export
+        environment:
+          - EXPORT_DIRECTORY: "/Magellan/Export"
+          - NUM_EXPORT_PROCESSORS: "200"
+          - IGNITE_TCP_DISCOVERY_ADDRESSES: "{{ item.env.ignite.servers  | join(',') }}"
+          - IGFS_NAME: "{{ item.env.ignite.igfs_name }}"
+          - IGNITE_CACHE_NAME: "{{ item.env.ignite.cache_name }}"
+          - IGNITE_PEER_CLASS_LOADING: "false"
+          - IGNITE_SKIP_CONFIGURATION_CONSISTENCY_CHECK: "true"
+          - IGNITE_QUEUE_LIMIT: 1024
+          - JAVA_OPTS: "-XX:+PrintFlagsFinal -XX:+PrintGCDetails -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9999 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -javaagent:/javaagent/jmx_prometheus_javaagent.jar=8080:/etc/prometheus/config.yaml -XX:+UseG1GC -XX:+ExplicitGCInvokesConcurrent -Xms512m -Xmx512m -XX:+UnlockDiagnosticVMOptions -XX:NativeMemoryTracking=summary -XX:+PrintNMTStatistics"

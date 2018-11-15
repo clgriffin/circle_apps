@@ -1,0 +1,1 @@
+docker run --rm -it -v $(pwd):/ansible/playbooks mullnerz/ansible-playbook ansible-playbook compose-creator.yml
